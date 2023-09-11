@@ -23,23 +23,40 @@ app.get("/api/hello", function (req, res) {
   res.json({ greeting: "hello API" });
 });
 
+app.get("/api", function (req, res) {
+  const currentDate = new Date();
+  return res.json({
+    unix: currentDate.getTime(),
+    utc: currentDate.toUTCString(),
+  });
+});
+
 app.get("/api/:date", function (req, res) {
-  console.log(req.params.date);
   const { date } = req.params;
+  console.log(req.params);
+  const isDateInvalid = (date) => new Date(date).toString() === "Invalid Date";
+
+  if (isDateInvalid(parseInt(date))) {
+    return res.json({ error: "Invalid Date" });
+  }
 
   let dateObject;
-  if (date.includes("-")) {
-    const currentDate = new Date(date);
+  if (date.includes("-") || date.includes("GMT")) {
+    const baseDate = new Date(date);
+
     dateObject = {
-      unix: Date.parse(currentDate),
-      utc: currentDate.toUTCString(),
+      unix: Date.parse(baseDate),
+      utc: baseDate.toUTCString(),
     };
   } else {
+    const baseDate = parseInt(date);
+
     dateObject = {
-      unix: date,
-      utc: new Date(date * 1000).toUTCString(),
+      unix: baseDate,
+      utc: new Date(baseDate).toUTCString(),
     };
   }
+
   res.json(dateObject);
 });
 
